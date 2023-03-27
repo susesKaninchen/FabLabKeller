@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Account löschen</title>
+    <link rel="stylesheet" type="text/css" href="/style.css">
+  </head>
+  <body>
+    <header>
+        <nav>
+            <ul>
+                <li><a href="/">Startseite</a></li>
+                <li><a href="/items">Gegenstände</a></li>
+                <li><a href="/items/new">Lager neuen Gegenstand</a></li>
+                <li><a href="/profile">Profil</a></li>
+                <li><a href="/logout">Logout</a></li>
+            </ul>
+        </nav>
+    </header>
+    <h1>Account löschen</h1>
+    <p>Möchtest du deinen Account wirklich löschen?</p>
+    <form method="POST" action="/delete-account">
+    <% if (items.length > 0) { %>
+        <p>Du hast noch folgende Gegenstände in der Lagerung:</p>
+        <ul>
+        <% items.forEach(function(item) { %>
+            <li><%= item.name %> (eingelagert am <%= item.createdAt.toLocaleDateString() %>)</li>
+        <% }); %>
+        </ul>
+        <p>Bitte hole zuerst alle Gegenstände aus der Lagerung, bevor du deinen Account löschst.</p>
+    <% } else { %>
+        <p>Dieser Schritt kann nicht rückgängig gemacht werden!</p>
+        <button type="submit">Account löschen</button>
+    <% } %>
+    </form>
+
+  </body>
+</html>

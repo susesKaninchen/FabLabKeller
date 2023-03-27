@@ -1,0 +1,26 @@
+<!-- views/profile.ejs -->
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Mein Profil</title>
+  <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+  <header>
+    <nav>
+      <ul>
+        <li><a href="/">Startseite</a></li>
+        <li><a href="/items">Gegenstände</a></li>
+        <li><a href="/items/new">Lager neuen Gegenstand</a></li>
+        <li><a href="/profile">Profil</a></li>
+        <li><a href="/logout">Logout</a></li>
+      </ul>
+    </nav>
+  </header>
+  <h1>Mein Profil</h1>
+  <h3>Email: <%= user.email %></h3>
+  <h3>Anzahl der Gegenstände: <%= itemCount %></h3>
+  <h3><a href="/change-password">Passwort ändern</a></h3>
+  <h3></h3><a href="/delete-account">Account löschen</a></h3>
+</body>
+</html>

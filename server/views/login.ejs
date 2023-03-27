@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Login Page</title>
+  <link rel="stylesheet" type="text/css" href="style.css">
+  <link rel="stylesheet" href="login.css">
+  <script type="text/javascript" src="script.js"></script>
+</head>
+<body>
+  <header>
+		<nav>
+		  <ul>
+			<li><a href="/">Startseite</a></li>
+			<li><a href="/items">Gegenstände</a></li>
+			<li><a href="/items/new">Lager neuen Gegenstand</a></li>
+			<li><a href="/profile">Profil</a></li>
+			<li><a href="/logout">Logout</a></li>
+		  </ul>
+		</nav>
+	  </header>
+  <h1>Login</h1>
+  <form action="/login" method="POST">
+    <label for="email">Email:</label>
+    <input type="text" id="email" name="email"><br>
+
+    <label for="password">Password:</label>
+    <input type="password" id="password" name="password"><br>
+
+    <button type="submit">Login</button>
+  </form>
+  <a href="/signup.html">Account erstellen</a>
+</body>
+</html>

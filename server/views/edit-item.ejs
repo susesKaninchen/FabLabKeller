@@ -1,0 +1,67 @@
+<!-- views/edit-item.ejs -->
+
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Item bearbeiten</title>
+    <link rel="stylesheet" type="text/css" href="/style.css">
+</head>
+
+<body>
+    <header>
+        <nav>
+            <ul>
+                <li><a href="/">Startseite</a></li>
+                <li><a href="/items">Gegenstände</a></li>
+                <li><a href="/items/new">Lager neuen Gegenstand</a></li>
+                <li><a href="/profile">Profil</a></li>
+                <li><a href="/logout">Logout</a></li>
+            </ul>
+        </nav>
+    </header>
+    <h1>Gegenstand bearbeiten</h1>
+    <form method="POST" action="/items/<%= item._id %>?_method=PUT">
+        <div>
+            <label for="name">Name</label>
+            <input type="text" name="name" value="<%= item.name %>">
+        </div>
+        <div>
+            <label for="storageLocation">Lagerort</label>
+            <input type="text" name="storageLocation" value="<%= item.storageLocation %>">
+        </div>
+        <div>
+            <label for="storageDuration">Lagerdauer (in Tagen)</label>
+            <input type="number" name="storageDuration" value="<%= item.storageDuration %>">
+        </div>
+        <div>
+            <label for="description">Beschreibung</label>
+            <input type="text" name="description" value="<%= item.description %>">
+        </div>
+        <button type="submit">Speichern</button>
+    </form>
+    <button id="delete-<%= item._id %>">Löschen</button>
+    <form method="POST" action="/items/<%= item._id %>/extend">
+        <button type="submit">Verlängern</button>
+    </form>
+    <script>
+        const deleteButtons = document.querySelectorAll('[id^="delete-"]');
+        deleteButtons.forEach((button) => {
+            button.addEventListener('click', () => {
+                const itemId = button.id.split('-')[1];
+                fetch(`/items/${itemId}`, { method: 'DELETE' })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        window.location.href = '/items';
+                    })
+                    .catch(error => {
+                        console.error('There was a fetch error: ', error);
+                    });
+            });
+        });
+    </script>
+</body>
+
+</html>

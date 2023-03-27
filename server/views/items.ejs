@@ -1,0 +1,108 @@
+<!-- views/items.ejs -->
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Meine Gegenstände</title>
+  <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+
+<body>
+  <header>
+    <nav>
+      <ul>
+        <li><a href="/">Startseite</a></li>
+        <li><a href="/items">Gegenstände</a></li>
+        <li><a href="/items/new">Lager neuen Gegenstand</a></li>
+        <li><a href="/profile">Profil</a></li>
+        <li><a href="/logout">Logout</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <h1>Gegenstände</h1>
+
+  <button onclick="window.location.href='/items/new'">Neues Element lagern</button>
+
+  <ul>
+    <% items.forEach(function(item) { %>
+      <li>
+        <h3>
+          <%= item.name %>
+        </h3>
+        <p>Besitzer: <%= email %>
+        </p>
+        <p>Erstellt am: <%= item.createdAt.toLocaleDateString('de-DE') %>
+        </p>
+        <% const remainingDays=Math.round((new Date(item.createdAt.getTime() + item.storageDuration * 24 * 60 * 60 *
+          1000) - new Date()) / (24 * 60 * 60 * 1000)); %>
+          <p class="remaining-days">Restzeit: <%= remainingDays %> Tage</p>
+          <p>Lagerort: <%= item.storageLocation %>
+          </p>
+          <p>Beschreibung: <%= item.description %>
+          </p>
+          <button id="edit-<%= item._id %>">Bearbeiten</button>
+          <button id="extend-<%= item._id %>">Verlängern</button>
+          <button id="delete-<%= item._id %>">Löschen</button>
+      </li>
+      <hr>
+      <% }); %>
+
+        <script>
+          const editButtons = document.querySelectorAll('[id^="edit-"]');
+          const extendButtons = document.querySelectorAll('[id^="extend-"]');
+          const deleteButtons = document.querySelectorAll('[id^="delete-"]');
+
+          editButtons.forEach((button) => {
+            button.addEventListener('click', () => {
+              const itemId = button.id.split('-')[1];
+              window.location.href = `/items/${itemId}/edit`;
+            });
+          });
+
+          extendButtons.forEach((button) => {
+            button.addEventListener('click', () => {
+              const itemId = button.id.split('-')[1];
+              fetch(`/items/${itemId}/extend`, {
+                method: 'POST'
+              })
+                .then(response => {
+                  if (response.ok) {
+                    window.location.reload();
+                  } else {
+                    throw new Error('Error extending item duration');
+                  }
+                })
+                .catch(error => {
+                  console.error(error);
+                });
+            });
+          });
+
+
+          deleteButtons.forEach((button) => {
+            button.addEventListener('click', () => {
+              const itemId = button.id.split('-')[1];
+              console.log(itemId);
+              if (itemId != null) {
+                fetch(`/items/${itemId}`, { method: 'DELETE' })
+                  .then(response => {
+                    if (!response.ok) {
+                      throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    window.location.reload();
+                  })
+                  .catch(error => {
+                    console.error('There was a fetch error: ', error);
+                  });
+              }
+            });
+          });
+
+        </script>
+
+
+        <script type="text/javascript" src="script.js"></script>
+</body>
+
+</html>

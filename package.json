@@ -1,0 +1,38 @@
+{
+  "name": "labkeller",
+  "version": "1.0.0",
+  "description": "Website um den LabKeller zu organisieren und die Emails zu senden",
+  "main": "index.js",
+  "scripts": {
+    "test": "\"echo \\\"Error: no test specified\\\" && exit 1\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/susesKaninchen/FabLabKeller.git"
+  },
+  "keywords": [
+    "keller",
+    "logistik"
+  ],
+  "author": "Marco Gabrecht",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/susesKaninchen/FabLabKeller/issues"
+  },
+  "homepage": "https://github.com/susesKaninchen/FabLabKeller#readme",
+  "dependencies": {
+    "bcrypt": "^5.1.0",
+    "connect-flash": "^0.1.1",
+    "connect-mongo": "^3.2.0",
+    "dotenv": "^16.0.3",
+    "ejs": "^3.1.9",
+    "express": "^4.18.2",
+    "express-session": "^1.17.3",
+    "mongodb": "^5.1.0",
+    "mongoose": "^7.0.3",
+    "node-cron": "^3.0.2",
+    "nodemailer": "^6.9.1",
+    "passport": "^0.6.0",
+    "passport-local": "^1.0.0"
+  }
+}

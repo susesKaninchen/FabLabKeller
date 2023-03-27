@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>New Item</title>
+    <link rel="stylesheet" href="/style.css">
+  </head>
+  <body>
+    <header>
+      <nav>
+        <ul>
+        <li><a href="/">Startseite</a></li>
+        <li><a href="/items">Gegenstände</a></li>
+        <li><a href="/items/new">Lager neuen Gegenstand</a></li>
+        <li><a href="/profile">Profil</a></li>
+        <li><a href="/logout">Logout</a></li>
+        </ul>
+      </nav>
+      </header>
+    <h1>Neues Objekt</h1>
+    <form action="/items" method="POST">
+      <div>
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" value="<%= email %>" required disabled>
+      </div>
+      <div>
+        <label for="date">Einlagerrungsdatum:</label>
+        <input type="date" id="date" name="date" value="<%= new Date().toISOString().substr(0, 10) %>" required disabled>
+      </div>
+      <div>
+        <label for="name">Name:</label>
+        <input type="text" id="name" name="name" required>
+      </div>
+      <div>
+        <label for="duration">Lagerdauer in Tagen:</label>
+        <input type="number" id="duration" name="duration" value="365" max="365" required>
+      </div>
+      <div>
+        <label for="location">Lagerfach:</label>
+        <input type="text" id="location" name="location" required>
+      </div>
+      <div>
+        <label for="description">Beschreibung/Inhalt:</label>
+        <textarea id="description" name="description"></textarea>
+      </div>
+      <div>
+        <input type="checkbox" id="parking-ticket" name="parking-ticket" required>
+        <label for="parking-ticket">Ich habe einen <a href="/Parkschein.pdf" target="_blank">Parkschein</a> angebracht</label>
+      </div>
+      <button type="submit">Objekt lagern</button>
+    </form>
+  </body>
+</html>

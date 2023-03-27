@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Registrierung</title>
+    <link rel="stylesheet" type="text/css" href="style.css">
+  </head>
+  <body>
+    <header>
+      <nav>
+        <ul>
+        <li><a href="/">Startseite</a></li>
+        <li><a href="/items">Gegenstände</a></li>
+        <li><a href="/items/new">Lager neuen Gegenstand</a></li>
+        <li><a href="/profile">Profil</a></li>
+        <li><a href="/logout">Logout</a></li>
+        </ul>
+      </nav>
+      </header>
+    <h1>Registrieren</h1>
+    <form action="/signup" method="post">
+      <div>
+        <label for="email">Benutzername:</label>
+        <input type="text" id="email" name="email" required>
+      </div>
+      <div>
+        <label for="password">Passwort:</label>
+        <input type="password" id="password" name="password" required>
+      </div>
+      <div>
+        <label for="confirmPassword">Passwort bestätigen:</label>
+        <input type="password" id="confirmPassword" name="confirmPassword" required>
+      </div>
+      <button type="submit">Registrieren</button>
+    </form>
+    <p>Bereits registriert? <a href="/login">Anmelden</a></p>
+  </body>
+</html>
