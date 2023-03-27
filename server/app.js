@@ -36,12 +36,13 @@ const userSchema = new mongoose.Schema({
 });
 
 userSchema.methods.comparePassword = function (password, callback) {
-    if (password == this.password) {
-        callback(null, true);
-    } else {
-        callback(null, false);
-    }
-};
+    bcrypt.compare(password, this.password, (err, isMatch) => {
+      if (err) {
+        return callback(err);
+      }
+      callback(null, isMatch);
+    });
+  };
 
 const itemSchema = new mongoose.Schema({
     owner: {
@@ -118,7 +119,6 @@ passport.use(new LocalStrategy({ usernameField: 'email' }, (email, password, don
                     console.log("faslches PW");
                     return done(null, false, { message: 'Incorrect email or password.' });
                 }
-                console.log("anserd");
                 return done(null, user);
             });
         })
@@ -142,20 +142,36 @@ app.post('/signup', (req, res, next) => {
                 req.flash('error', 'email already exists');
                 return res.redirect('/signup.html');
             }
-            const newUser = new User({
-                email: email,
-                password: password
+
+            // Generate salt and hash password
+            bcrypt.genSalt(10, (err, salt) => {
+                if (err) {
+                    return next(err);
+                }
+
+                bcrypt.hash(password, salt, (err, hash) => {
+                    if (err) {
+                        return next(err);
+                    }
+
+                    // Create new user with hashed password
+                    const newUser = new User({
+                        email: email,
+                        password: hash
+                    });
+                    return newUser.save()
+                        .then(() => {
+                            req.flash('success', 'Account created. Please log in.');
+                            return res.redirect('/login');
+                        });
+                });
             });
-            return newUser.save();
-        })
-        .then(() => {
-            req.flash('success', 'Account created. Please log in.');
-            return res.redirect('/login');
         })
         .catch((err) => {
             return next(err);
         });
 });
+
 
 app.get('/login', (req, res) => {
     res.render('login');
