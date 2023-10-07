@@ -12,6 +12,9 @@ const bcrypt = require('bcrypt');
 const cron = require('node-cron');
 const nodemailer = require('nodemailer');
 const emailGen = require('./emailTexte.js');
+const crypto = require('crypto');
+const { log } = require('console');
+
 require('dotenv').config();
 
 // Datenbankverbindung herstellen
@@ -32,7 +35,9 @@ const userSchema = new mongoose.Schema({
     password: {
         type: String,
         required: true
-    }
+    },
+    resetPasswordToken: String,
+    resetPasswordExpires: Date
 });
 
 userSchema.methods.comparePassword = function (password, callback) {
@@ -108,7 +113,7 @@ passport.use(new LocalStrategy({ usernameField: 'email' }, (email, password, don
         .then((user) => {
             if (!user) {
                 console.log("User nicht gefunden");
-                return done(null, false, { message: 'Incorrect email or password.' });
+                return done(null, false, { message: 'Benutzer oder Passwort falsch.' });
             }
             user.comparePassword(password, (err, isMatch) => {
                 if (err) {
@@ -117,7 +122,7 @@ passport.use(new LocalStrategy({ usernameField: 'email' }, (email, password, don
                 }
                 if (!isMatch) {
                     console.log("faslches PW");
-                    return done(null, false, { message: 'Incorrect email or password.' });
+                    return done(null, false, { message: 'Benutzer oder Passwort falsch.' });
                 }
                 return done(null, user);
             });
@@ -159,8 +164,24 @@ app.post('/signup', (req, res, next) => {
                         email: email,
                         password: hash
                     });
+                    const transporter = nodemailer.createTransport({
+                        host: process.env.SMTP_HOST,
+                        port: process.env.SMTP_PORT,
+                        auth: {
+                          user: process.env.SMTP_USER,
+                          pass: process.env.SMTP_PASSWORD
+                        }
+                      });
+                      const mailOptions = {
+                        from: process.env.SMTP_USER,
+                        to: email,
+                        subject: 'FabLab Lübeck KellerSystem: Acc erstellt',
+                        html: `Du hast erfolgreich einen acc bei Fab Lab Lübeck erstellt`,
+                      };
+                      transporter.sendMail(mailOptions).then((all) => {console.log(all);})
                     return newUser.save()
                         .then(() => {
+                            
                             req.flash('success', 'Account created. Please log in.');
                             return res.redirect('/login');
                         });
@@ -174,19 +195,131 @@ app.post('/signup', (req, res, next) => {
 
 
 app.get('/login', (req, res) => {
-    res.render('login');
+    const message = req.flash('message');
+    const successMessage = req.flash('success');
+    const errorMessage = req.flash('error');
+    res.render('login', { messages: successMessage + errorMessage + message});
 });
+
 app.post('/login', passport.authenticate('local', {
     successRedirect: '/items',
     failureRedirect: '/login',
-    failureFlash: true
-}));
+    failureFlash: true, 
+  }));
+  
+
 app.get('/logout', (req, res) => {
     req.logout(function (err) {
         if (err) { return next(err); }
         res.redirect('/');
     });
 });
+
+app.get('/forgot-password', (req, res) => {
+    const successMessage = req.flash('success');
+    const errorMessage = req.flash('error');
+    res.render('forgot-password.ejs', { successMessage: successMessage, errorMessage: errorMessage });
+  }
+);
+
+app.post('/forgot-password', (req, res, next) => {
+    const { email } = req.body;
+    User.findOne({ email })
+      .then((user) => {
+        if (!user) {
+          req.flash('error', 'Email nicht gefunden');
+          return res.redirect('/forgot-password');
+        }
+        const token = crypto.randomBytes(20).toString('hex');
+        user.resetPasswordToken = token;
+        user.resetPasswordExpires = Date.now() + 3600000; // 1 hour
+        return user.save();
+      })
+      .then((user) => {
+        const transporter = nodemailer.createTransport({
+            host: process.env.SMTP_HOST,
+            port: process.env.SMTP_PORT,
+            auth: {
+              user: process.env.SMTP_USER,
+              pass: process.env.SMTP_PASSWORD
+            }
+          });
+        const resetLink = `${process.env.WEB_DOMAIN}/reset-password/${user.resetPasswordToken}`;
+        console.log(resetLink);
+        const mailOptions = {
+            from: process.env.SMTP_USER,
+          to: user.email,
+          subject: 'FabLab Lübeck KellerSystem: Passwort zurücksetzen',
+          html: `Klicke <a href="${resetLink}">hier</a> um dein Passwort zurück zu setzen. (Link nur 1 Stunde gültig)`,
+        };
+        return transporter.sendMail(mailOptions);
+      })
+      .then(() => {
+        req.flash('success', 'Überprüfe deine email den Passwort reset Link.');
+        res.redirect('/forgot-password');
+      })
+      .catch(next);
+  });
+  
+  app.get('/reset-password/:token', (req, res, next) => {
+    const { token } = req.params;
+    User.findOne({ resetPasswordToken: token, resetPasswordExpires: { $gt: Date.now() } })
+      .then((user) => {
+        if (!user) {
+          req.flash('error', 'Password reset token is invalid or has expired.');
+          return res.redirect('/forgot-password');
+        }
+        const successMessage = req.flash('success');
+        const errorMessage = req.flash('error');
+        res.render('reset-password.ejs', { token , message: successMessage + errorMessage });
+      })
+      .catch(next);
+  });
+  
+  app.post('/reset-password/:token', (req, res, next) => {
+    const token = req.params.token;
+    const { password, confirmPassword } = req.body;
+  
+    // Validate password and confirmPassword
+    if (password !== confirmPassword) {
+      req.flash('error', 'Passwords do not match.');
+      return res.redirect(`/reset-password/${token}`);
+    }
+  
+    // Find user by token
+    User.findOne({ resetPasswordToken: token, resetPasswordExpires: { $gt: Date.now() } })
+      .then((user) => {
+        if (!user) {
+          req.flash('error', 'Invalid or expired reset password token.');
+          return res.redirect('/forgot-password');
+        }
+        bcrypt.genSalt(10, (err, salt) => {
+            if (err) {
+                req.flash('error', err);
+                return next(err);
+            }
+            bcrypt.hash(password, salt, (err, hash) => {
+                if (err) {
+                    req.flash('error', err);
+                    return next(err);
+                }
+                user.password = hash;
+                user.resetPasswordToken = undefined;
+                user.resetPasswordExpires = undefined;
+                // Save user
+                return user.save();
+            });
+        });
+      })
+      .then(() => {
+        req.flash('success', 'Dein Passwort wurde zurückgesetzt. Bitte logge dich mit deinem neuen Passwort ein.');
+        return res.redirect('/login');
+      })
+      .catch((err) => {
+        return next(err);
+      });
+  });
+  
 
 app.get('/profile', ensureAuthenticated, (req, res, next) => {
     Item.countDocuments({ owner: req.user.id }).then((count) => {

@@ -20,6 +20,11 @@
 		</nav>
 	  </header>
   <h1>Login</h1>
+  <% if (messages) { %>
+    <div class="alert alert-danger" role="alert">
+      <%= messages %>
+    </div>
+  <% } %>
   <form action="/login" method="POST">
     <label for="email">Email:</label>
     <input type="text" id="email" name="email"><br>
@@ -29,6 +34,7 @@
 
     <button type="submit">Login</button>
   </form>
-  <a href="/signup.html">Account erstellen</a>
+  <a href="/signup.html">Account erstellen</a></body><br>
+  <a href="/forgot-password">Password vergessen</a>
 </body>
 </html>
